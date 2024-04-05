@@ -6,16 +6,21 @@ import {
   SafeAreaView,
   TextInput,
   FlatList,
+  Button,
+  useWindowDimensions,
 } from "react-native";
 import { useState, useEffect } from "react";
 import HTML from "react-native-render-html";
 
 export default function App() {
+  const { width } = useWindowDimensions();
+  const [name, setName] = useState("");
   const [postList, setPostList] = useState([]);
   const fetchData = async () => {
     try {
       const query = "blisters";
-      const response = await fetch(`https://api.nhs.uk/conditions/${query}`, {
+      console.log(name);
+      const response = await fetch(`https://api.nhs.uk/conditions/${name}`, {
         headers: {
           "subscription-key": "13a43248355e41c0beedcd663fc14c2b",
         },
@@ -44,20 +49,26 @@ export default function App() {
       console.log(e);
     }
   };
-  console.log(postList);
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const [name, setName] = useState("");
+  //console.log(postList);
+  // useEffect(() => {
+  //   fetchData();
+  // }, []);
+  const handleInputChange = (text) => {
+    setName(text);
+    //console.log(text);
+  };
   return (
     <SafeAreaView style={styles.container}>
       <TextInput
         style={styles.input}
         value={name}
-        onChangeText={setName}
+        onChangeText={handleInputChange}
+        defaultValue={name}
+        //onChangeText={(newText) => setName(newText)}
+        //defaultValue={name}
         placeholder="What is your Emergency?"
       />
+      <Button title="Press me" onPress={() => fetchData()} />
       <View style={styles.listContainer}>
         <FlatList
           data={postList}
@@ -66,7 +77,11 @@ export default function App() {
               <View style={styles.card}>
                 <Text style={styles.titleText}>{item.headline}</Text>
 
-                {<HTML source={{ html: item.text }} />}
+                {item.text ? (
+                  <HTML source={{ html: item.text }} contentWidth={width} />
+                ) : (
+                  <Text>No content available</Text>
+                )}
               </View>
             );
           }}
